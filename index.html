@@ -2,60 +2,119 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Игра Да/Нет</title>
+  <title>Мини 3D игра (прототип Granny)</title>
   <style>
-    body {
-      background: linear-gradient(180deg, #1e3c72, #2a5298);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-    }
-    button {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      border: none;
-      background-color: #4CAF50;
-      font-size: 24px;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    button:disabled {
-      background-color: #E53935;
-      cursor: default;
-    }
-    #result {
-      margin-top: 50px;
-      font-size: 48px;
-      height: 60px;
-    }
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-  <button id="btn">Нажми меня</button>
-  <div id="result"></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/controls/PointerLockControls.js"></script>
 
-  <script>
-    const btn = document.getElementById('btn');
-    const result = document.getElementById('result');
+<script>
+  let camera, scene, renderer, controls;
+  let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+  let velocity = new THREE.Vector3();
+  let prevTime = performance.now();
 
-    btn.addEventListener('click', () => {
-      btn.disabled = true;
-      result.textContent = '';
+  init();
+  animate();
 
-      setTimeout(() => {
-        const answers = ['Да', 'Нет'];
-        const answer = answers[Math.floor(Math.random() * answers.length)];
-        result.textContent = answer;
-        btn.disabled = false;
-      }, 1000);
+  function init() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x88ccff);
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Свет
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(1, 10, 5);
+    scene.add(light);
+
+    // Пол
+    const floorGeometry = new THREE.PlaneGeometry(200, 200);
+    const floorMaterial = new THREE.MeshPhongMaterial({color: 0x228822});
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI/2;
+    scene.add(floor);
+
+    // Игрок - простой куб
+    const playerGeometry = new THREE.BoxGeometry(1, 2, 1);
+    const playerMaterial = new THREE.MeshStandardMaterial({color: 0x0000ff});
+    const player = new THREE.Mesh(playerGeometry, playerMaterial);
+    player.position.y = 1;
+    scene.add(player);
+
+    // Контролы мыши + клавиатуры
+    controls = new THREE.PointerLockControls(camera, document.body);
+    scene.add(controls.getObject());
+
+    // Начинаем с позиции игрока
+    controls.getObject().position.set(0, 1.6, 0);
+
+    document.body.addEventListener('click', () => {
+      controls.lock();
     });
-  </script>
+
+    const onKeyDown = function(event) {
+      switch(event.code) {
+        case 'KeyW': moveForward = true; break;
+        case 'KeyS': moveBackward = true; break;
+        case 'KeyA': moveLeft = true; break;
+        case 'KeyD': moveRight = true; break;
+      }
+    };
+
+    const onKeyUp = function(event) {
+      switch(event.code) {
+        case 'KeyW': moveForward = false; break;
+        case 'KeyS': moveBackward = false; break;
+        case 'KeyA': moveLeft = false; break;
+        case 'KeyD': moveRight = false; break;
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth/window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    if (controls.isLocked === true) {
+      const time = performance.now();
+      const delta = (time - prevTime) / 1000;
+
+      velocity.x -= velocity.x * 10.0 * delta;
+      velocity.z -= velocity.z * 10.0 * delta;
+
+      const speed = 5.0;
+
+      if (moveForward) velocity.z -= speed * delta;
+      if (moveBackward) velocity.z += speed * delta;
+      if (moveLeft) velocity.x -= speed * delta;
+      if (moveRight) velocity.x += speed * delta;
+
+      controls.moveRight(-velocity.x * delta);
+      controls.moveForward(-velocity.z * delta);
+
+      prevTime = time;
+    }
+
+    renderer.render(scene, camera);
+  }
+</script>
 </body>
 </html>
