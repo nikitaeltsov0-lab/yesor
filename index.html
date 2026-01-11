@@ -189,3 +189,74 @@ function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   frameCount++;
+
+// Добавляем платформы каждые 80 кадров (~2.5 секунды)
+  if(frameCount % 80 === 0) {
+    let platformHeight = canvas.height - 30 - Math.random() * 80;
+    platforms.push(new Platform(canvas.width, platformHeight));
+  }
+
+  for(let i = platforms.length -1; i >= 0; i--) {
+    platforms[i].update(platformSpeed);
+    platforms[i].draw();
+
+    if(platforms[i].x + platforms[i].width < 0) {
+      platforms.splice(i, 1);
+    }
+  }
+  
+  // Шипы обновляем и рисуем
+  for(let i = spikes.length -1; i >= 0; i--) {
+    spikes[i].update(platformSpeed);
+    spikes[i].draw();
+
+    if(spikes[i].x + spikes[i].size < 0) {
+      spikes.splice(i, 1);
+    }
+
+    if(spikes[i].collide(player)) {
+      // При столкновении со шипами — рестарт игры
+      resetGame();
+      return;
+    }
+  }
+
+  // Обработка столкновения игрока с платформами
+  player.grounded = false;
+  for(let platform of platforms) {
+    if(collision(player, platform)) {
+      player.y = platform.y - player.height;
+      player.dy = 0;
+      player.grounded = true;
+      break;
+    }
+  }
+
+  player.update();
+  player.draw();
+
+  requestAnimationFrame(gameLoop);
+}
+
+window.addEventListener('keydown', (e) => {
+  if(e.code === 'Space') {
+    player.jump();
+  }
+});
+
+const jumpButton = document.getElementById('jumpButton');
+jumpButton.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  player.jump();
+});
+jumpButton.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  player.jump();
+});
+
+// Запуск игры
+resetGame();
+gameLoop();
+</script>
+</body>
+</html>
