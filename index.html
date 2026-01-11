@@ -33,7 +33,7 @@ def рисовать_градиент(канвас, ширина, высота, 
 центр_x = canvas_width // 2
 центр_y = int(canvas_height * 0.5)  # кнопка ниже центра
 
-радиус = canvas_size // 2
+радиус = canvas_size // 2    
 круг = canvas.create_oval(центр_x - радиус, центр_y - радиус, центр_x + радиус, центр_y + радиус, fill=цвет_по_умолчанию, outline="")
 
 текст_id = canvas.create_text(центр_x, int(canvas_height * 0.8), text="", font=("Arial", 28), fill="white")
@@ -90,3 +90,4 @@ def нажать(event):
 canvas.tag_bind(круг, "<Button-1>", нажать)
 
 root.mainloop()
+    
