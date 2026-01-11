@@ -100,14 +100,7 @@ class Player {
   update() {
     this.dy += gravity;
     this.y += this.dy;
-    
-    if(this.y + this.height > canvas.height - 30) {
-      this.y = canvas.height - 30 - this.height;
-      this.dy = 0;
-      this.grounded = true;
-    } else {
-      this.grounded = false;
-    }
+    // Не сбрасываем grounded здесь!
   }
   
   jump() {
@@ -189,6 +182,7 @@ let platforms = [];
 let spikes = [];
 let platformSpeed = 3;
 let frameCount = 0;
+
 function resetGame() {
   player.y = canvas.height - player.height - 30;
   player.dy = 0;
@@ -252,7 +246,9 @@ function gameLoop() {
     }
   }
 
+  // Сначала сброс grounded, потом проверка платформ и пола
   player.grounded = false;
+
   for(let platform of platforms) {
     if(collision(player, platform)) {
       player.y = platform.y - player.height;
@@ -260,6 +256,13 @@ function gameLoop() {
       player.grounded = true;
       break;
     }
+  }
+
+  // Проверка пола
+  if(player.y + player.height >= canvas.height - 30) {
+    player.y = canvas.height - 30 - player.height;
+    player.dy = 0;
+    player.grounded = true;
   }
 
   player.update();
