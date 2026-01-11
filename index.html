@@ -201,7 +201,7 @@ function resetGame() {
   platforms.push(new Platform(0, canvas.height - 30, canvas.width, 30));
   
   // Шипы на полу, убираем первый слишком близко (начинаем с 200)
-  for(let i = 200; i < canvas.width; i += 80) {
+  for(let i = 200; i < canvas.width; i += 140) {
     spikes.push(new Spike(i, canvas.height - 30));
   }
 }
