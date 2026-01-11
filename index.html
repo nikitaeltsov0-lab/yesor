@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<title>Платформер с рабочими прыжками</title>
+<title>Платформер с буфером прыжка</title>
 <style>
   html, body {
     margin: 0; 
@@ -85,6 +85,7 @@ canvas.height = 320;
 const gravity = 0.6;
 
 let gameRunning = false;
+let jumpRequested = false;
 
 class Player {
   constructor() {
@@ -100,14 +101,6 @@ class Player {
   update() {
     this.dy += gravity;
     this.y += this.dy;
-    // Не сбрасываем grounded здесь!
-  }
-  
-  jump() {
-    if(this.grounded) {
-      this.dy = this.jumpForce;
-      this.grounded = false;
-    }
   }
   
   draw() {
@@ -246,7 +239,7 @@ function gameLoop() {
     }
   }
 
-  // Сначала сброс grounded, потом проверка платформ и пола
+  // Сброс grounded перед проверкой
   player.grounded = false;
 
   for(let platform of platforms) {
@@ -258,12 +251,19 @@ function gameLoop() {
     }
   }
 
-  // Проверка пола
+  // Проверка пола (земли)
   if(player.y + player.height >= canvas.height - 30) {
     player.y = canvas.height - 30 - player.height;
     player.dy = 0;
     player.grounded = true;
   }
+
+  // Прыжок по запросу
+  if (jumpRequested && player.grounded) {
+    player.dy = -12;
+    player.grounded = false;
+  }
+  jumpRequested = false;
 
   player.update();
   player.draw();
@@ -280,17 +280,17 @@ function gameLoop() {
 
 window.addEventListener('keydown', (e) => {
   if(e.code === 'Space' && gameRunning) {
-    player.jump();
+    jumpRequested = true;
   }
 });
 
 jumpButton.addEventListener('touchstart', (e) => {
   e.preventDefault();
-  if(gameRunning) player.jump();
+  if(gameRunning) jumpRequested = true;
 });
 jumpButton.addEventListener('mousedown', (e) => {
   e.preventDefault();
-  if(gameRunning) player.jump();
+  if(gameRunning) jumpRequested = true;
 });
 
 startButton.addEventListener('click', () => {
