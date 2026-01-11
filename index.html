@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<title>Платформер с меню и плавным паркуром</title>
+<title>Платформер с рабочими прыжками</title>
 <style>
   html, body {
     margin: 0; 
@@ -90,8 +90,8 @@ class Player {
   constructor() {
     this.width = 30;
     this.height = 50;
-    this.x = 50; // фиксированное положение по горизонтали
-    this.y = canvas.height - this.height - 30; // старт на полу
+    this.x = 50;
+    this.y = canvas.height - this.height - 30;
     this.dy = 0;
     this.jumpForce = -12;
     this.grounded = false;
@@ -189,7 +189,6 @@ let platforms = [];
 let spikes = [];
 let platformSpeed = 3;
 let frameCount = 0;
-
 function resetGame() {
   player.y = canvas.height - player.height - 30;
   player.dy = 0;
@@ -200,17 +199,15 @@ function resetGame() {
   
   platforms.push(new Platform(0, canvas.height - 30, canvas.width, 30));
   
-  // Шипы на полу, стартуем с 200, расстояние 140
   for(let i = 200; i < canvas.width; i += 140) {
     spikes.push(new Spike(i, canvas.height - 30));
   }
 }
 
 function collision(player, platform) {
-  return player.x < platform.x + platform.width &&
-         player.x + player.width > platform.x &&
-         player.y + player.height <= platform.y + player.dy &&
-         player.y + player.height + player.dy >= platform.y;
+  const horizontalCollision = player.x + player.width > platform.x && player.x < platform.x + platform.width;
+  const verticalCollision = player.y + player.height >= platform.y && player.y + player.height <= platform.y + 10;
+  return horizontalCollision && verticalCollision;
 }
 
 function gameLoop() {
@@ -220,14 +217,12 @@ function gameLoop() {
 
   frameCount++;
 
-  // Добавляем платформы если нет или последняя далеко от правого края
   let lastPlatform = platforms.length > 0 ? platforms[platforms.length - 1] : null;
   if (!lastPlatform || lastPlatform.x + lastPlatform.width < canvas.width - 150) {
     let platformHeight = canvas.height - 30 - Math.random() * 80;
     platforms.push(new Platform(canvas.width, platformHeight));
   }
 
-  // Обновляем и рисуем платформы
   for(let i = platforms.length -1; i >= 0; i--) {
     platforms[i].update(platformSpeed);
     platforms[i].draw();
@@ -237,13 +232,11 @@ function gameLoop() {
     }
   }
   
-  // Добавляем шипы если нет или последний далеко от правого края
   let lastSpike = spikes.length > 0 ? spikes[spikes.length - 1] : null;
   if (!lastSpike || lastSpike.x < canvas.width - 140) {
     spikes.push(new Spike(canvas.width, canvas.height - 30));
   }
 
-  // Обновляем и рисуем шипы
   for(let i = spikes.length -1; i >= 0; i--) {
     spikes[i].update(platformSpeed);
     spikes[i].draw();
@@ -272,7 +265,6 @@ function gameLoop() {
   player.update();
   player.draw();
 
-  // Движущаяся земля
   ctx.fillStyle = '#654321';
   let groundWidth = 40;
   let offset = (frameCount * platformSpeed) % groundWidth;
