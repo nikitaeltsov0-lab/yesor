@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<title>Бесконечный платформер с шипами</title>
+<title>Бесконечный платформер с движением</title>
 <style>
   html, body {
     margin: 0; 
@@ -57,7 +57,7 @@ class Player {
   constructor() {
     this.width = 30;
     this.height = 50;
-    this.x = 50;
+    this.x = 50; // фиксированное положение по горизонтали
     this.y = canvas.height - this.height - 30; // старт на полу
     this.dy = 0;
     this.jumpForce = -12;
@@ -131,7 +131,6 @@ class Spike {
   }
   
   collide(player) {
-    // Простая проверка пересечения прямоугольников (спайк - bbox)
     let spikeRect = {
       x: this.x,
       y: this.y - this.size,
@@ -160,7 +159,6 @@ let platformSpeed = 3;
 let frameCount = 0;
 
 function resetGame() {
-  player.x = 50;
   player.y = canvas.height - player.height - 30;
   player.dy = 0;
   player.grounded = false;
@@ -171,14 +169,13 @@ function resetGame() {
   // Стартовая платформа (пол)
   platforms.push(new Platform(0, canvas.height - 30, canvas.width, 30));
   
-  // Шипы на полу, равномерно
+  // Шипы на полу
   for(let i = 100; i < canvas.width; i += 80) {
     spikes.push(new Spike(i, canvas.height - 30));
   }
 }
 
 function collision(player, platform) {
-  // Проверка, что игрок сверху платформы, и немного учитываем движение вниз (dy)
   return player.x < platform.x + platform.width &&
          player.x + player.width > platform.x &&
          player.y + player.height <= platform.y + player.dy &&
@@ -190,12 +187,13 @@ function gameLoop() {
 
   frameCount++;
 
-// Добавляем платформы каждые 80 кадров (~2.5 секунды)
+// Добавляем платформы чаще, ближе друг к другу
   if(frameCount % 80 === 0) {
     let platformHeight = canvas.height - 30 - Math.random() * 80;
     platforms.push(new Platform(canvas.width, platformHeight));
   }
 
+  // Двигаем и рисуем платформы
   for(let i = platforms.length -1; i >= 0; i--) {
     platforms[i].update(platformSpeed);
     platforms[i].draw();
@@ -205,7 +203,7 @@ function gameLoop() {
     }
   }
   
-  // Шипы обновляем и рисуем
+  // Двигаем и рисуем шипы
   for(let i = spikes.length -1; i >= 0; i--) {
     spikes[i].update(platformSpeed);
     spikes[i].draw();
@@ -215,13 +213,12 @@ function gameLoop() {
     }
 
     if(spikes[i].collide(player)) {
-      // При столкновении со шипами — рестарт игры
       resetGame();
       return;
     }
   }
 
-  // Обработка столкновения игрока с платформами
+  // Проверка столкновения с платформами
   player.grounded = false;
   for(let platform of platforms) {
     if(collision(player, platform)) {
@@ -234,6 +231,14 @@ function gameLoop() {
 
   player.update();
   player.draw();
+
+  // Нарисуем землю движущейся полосой под игроком (для эффекта движения)
+  ctx.fillStyle = '#654321';
+  let groundWidth = 40;
+  let offset = (frameCount * platformSpeed) % groundWidth;
+  for(let x = -offset; x < canvas.width; x += groundWidth) {
+    ctx.fillRect(x, canvas.height - 30, groundWidth / 2, 30);
+  }
 
   requestAnimationFrame(gameLoop);
 }
@@ -254,7 +259,6 @@ jumpButton.addEventListener('mousedown', (e) => {
   player.jump();
 });
 
-// Запуск игры
 resetGame();
 gameLoop();
 </script>
