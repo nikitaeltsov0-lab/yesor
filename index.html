@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<title>Бесконечный платформер с движением</title>
+<title>Платформер с меню</title>
 <style>
   html, body {
     margin: 0; 
@@ -13,6 +13,7 @@
     background: #87ceeb;
     overflow: hidden;
     flex-direction: column;
+    font-family: Arial, sans-serif;
   }
   #game {
     background: #cceedd;
@@ -22,6 +23,7 @@
     max-width: 100vw;
     max-height: 80vh;
     border: 2px solid #333;
+    display: none;
   }
   #jumpButton {
     margin-top: 15px;
@@ -34,13 +36,38 @@
     border: none;
     user-select: none;
     touch-action: manipulation;
+    display: none;
   }
   #jumpButton:active {
+    background-color: #388E3C;
+  }
+  #menu {
+    color: #fff;
+    text-align: center;
+  }
+  #menu button {
+    padding: 15px 30px;
+    font-size: 24px;
+    border-radius: 10px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  #menu button:active {
     background-color: #388E3C;
   }
 </style>
 </head>
 <body>
+
+<div id="menu">
+  <h1>Бесконечный платформер</h1>
+  <button id="startButton">Начать игру</button>
+</div>
+
 <canvas id="game"></canvas>
 <button id="jumpButton">Прыжок</button>
 
@@ -48,10 +75,16 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
+const menu = document.getElementById('menu');
+const startButton = document.getElementById('startButton');
+const jumpButton = document.getElementById('jumpButton');
+
 canvas.width = 480;
 canvas.height = 320;
 
 const gravity = 0.6;
+
+let gameRunning = false;
 
 class Player {
   constructor() {
@@ -68,7 +101,6 @@ class Player {
     this.dy += gravity;
     this.y += this.dy;
     
-    // Столкновение с полом
     if(this.y + this.height > canvas.height - 30) {
       this.y = canvas.height - 30 - this.height;
       this.dy = 0;
@@ -166,11 +198,10 @@ function resetGame() {
   spikes = [];
   frameCount = 0;
   
-  // Стартовая платформа (пол)
   platforms.push(new Platform(0, canvas.height - 30, canvas.width, 30));
   
-  // Шипы на полу
-  for(let i = 100; i < canvas.width; i += 80) {
+  // Шипы на полу, убираем первый слишком близко (начинаем с 200)
+  for(let i = 200; i < canvas.width; i += 80) {
     spikes.push(new Spike(i, canvas.height - 30));
   }
 }
@@ -183,17 +214,17 @@ function collision(player, platform) {
 }
 
 function gameLoop() {
+  if (!gameRunning) return;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   frameCount++;
 
-// Добавляем платформы чаще, ближе друг к другу
   if(frameCount % 80 === 0) {
     let platformHeight = canvas.height - 30 - Math.random() * 80;
     platforms.push(new Platform(canvas.width, platformHeight));
   }
 
-  // Двигаем и рисуем платформы
   for(let i = platforms.length -1; i >= 0; i--) {
     platforms[i].update(platformSpeed);
     platforms[i].draw();
@@ -203,7 +234,6 @@ function gameLoop() {
     }
   }
   
-  // Двигаем и рисуем шипы
   for(let i = spikes.length -1; i >= 0; i--) {
     spikes[i].update(platformSpeed);
     spikes[i].draw();
@@ -213,12 +243,13 @@ function gameLoop() {
     }
 
     if(spikes[i].collide(player)) {
-      resetGame();
+      // При смерти — возвращаем в меню
+      gameRunning = false;
+      showMenu();
       return;
     }
   }
 
-  // Проверка столкновения с платформами
   player.grounded = false;
   for(let platform of platforms) {
     if(collision(player, platform)) {
@@ -232,7 +263,7 @@ function gameLoop() {
   player.update();
   player.draw();
 
-  // Нарисуем землю движущейся полосой под игроком (для эффекта движения)
+  // Движущаяся земля
   ctx.fillStyle = '#654321';
   let groundWidth = 40;
   let offset = (frameCount * platformSpeed) % groundWidth;
@@ -244,23 +275,41 @@ function gameLoop() {
 }
 
 window.addEventListener('keydown', (e) => {
-  if(e.code === 'Space') {
+  if(e.code === 'Space' && gameRunning) {
     player.jump();
   }
 });
 
-const jumpButton = document.getElementById('jumpButton');
 jumpButton.addEventListener('touchstart', (e) => {
   e.preventDefault();
-  player.jump();
+  if(gameRunning) player.jump();
 });
 jumpButton.addEventListener('mousedown', (e) => {
   e.preventDefault();
-  player.jump();
+  if(gameRunning) player.jump();
 });
 
-resetGame();
-gameLoop();
+startButton.addEventListener('click', () => {
+  startGame();
+});
+
+function showMenu() {
+  menu.style.display = 'block';
+  canvas.style.display = 'none';
+  jumpButton.style.display = 'none';
+}
+
+function startGame() {
+  menu.style.display = 'none';
+  canvas.style.display = 'block';
+  jumpButton.style.display = 'inline-block';
+  resetGame();
+  gameRunning = true;
+  gameLoop();
+}
+
+// Запуск — показываем меню
+showMenu();
 </script>
 </body>
 </html>
