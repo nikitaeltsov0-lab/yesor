@@ -330,7 +330,7 @@ function startGame() {
   jumpButton.style.display = 'inline-block';
   resetGame();
   gameRunning = true;
-  gameLoop();
+  requestAnimationFrame(gameLoop);
 }
 
 showMenu();
