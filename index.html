@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<title>Платформер с буфером прыжка</title>
+<title>Платформер с рекордом и плавной скоростью</title>
 <style>
   html, body {
     margin: 0; 
@@ -86,6 +86,9 @@ const gravity = 0.6;
 
 let gameRunning = false;
 let jumpRequested = false;
+
+let score = 0;
+let highScore = localStorage.getItem('highScore') || 0;
 
 class Player {
   constructor() {
@@ -175,6 +178,7 @@ let platforms = [];
 let spikes = [];
 let platformSpeed = 3;
 let frameCount = 0;
+let lastTime = 0;
 
 function resetGame() {
   player.y = canvas.height - player.height - 30;
@@ -183,7 +187,8 @@ function resetGame() {
   platforms = [];
   spikes = [];
   frameCount = 0;
-  
+  score = 0;
+
   platforms.push(new Platform(0, canvas.height - 30, canvas.width, 30));
   
   for(let i = 200; i < canvas.width; i += 140) {
@@ -197,12 +202,22 @@ function collision(player, platform) {
   return horizontalCollision && verticalCollision;
 }
 
-function gameLoop() {
+function gameLoop(time=0) {
   if (!gameRunning) return;
+
+  const deltaTime = (time - lastTime) / 16.67;
+  lastTime = time;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   frameCount++;
+
+  // Обновляем score
+  score++;
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('highScore', highScore);
+  }
 
   let lastPlatform = platforms.length > 0 ? platforms[platforms.length - 1] : null;
   if (!lastPlatform || lastPlatform.x + lastPlatform.width < canvas.width - 150) {
@@ -210,8 +225,10 @@ function gameLoop() {
     platforms.push(new Platform(canvas.width, platformHeight));
   }
 
+  const speed = platformSpeed * deltaTime;
+
   for(let i = platforms.length -1; i >= 0; i--) {
-    platforms[i].update(platformSpeed);
+    platforms[i].update(speed);
     platforms[i].draw();
 
     if(platforms[i].x + platforms[i].width < 0) {
@@ -225,7 +242,7 @@ function gameLoop() {
   }
 
   for(let i = spikes.length -1; i >= 0; i--) {
-    spikes[i].update(platformSpeed);
+    spikes[i].update(speed);
     spikes[i].draw();
 
     if(spikes[i].x + spikes[i].size < 0) {
@@ -239,7 +256,6 @@ function gameLoop() {
     }
   }
 
-  // Сброс grounded перед проверкой
   player.grounded = false;
 
   for(let platform of platforms) {
@@ -251,14 +267,12 @@ function gameLoop() {
     }
   }
 
-  // Проверка пола (земли)
   if(player.y + player.height >= canvas.height - 30) {
     player.y = canvas.height - 30 - player.height;
     player.dy = 0;
     player.grounded = true;
   }
 
-  // Прыжок по запросу
   if (jumpRequested && player.grounded) {
     player.dy = -12;
     player.grounded = false;
@@ -274,6 +288,12 @@ function gameLoop() {
   for(let x = -offset; x < canvas.width; x += groundWidth) {
     ctx.fillRect(x, canvas.height - 30, groundWidth / 2, 30);
   }
+
+  // Рисуем счёт и рекорд
+  ctx.fillStyle = 'black';
+  ctx.font = '20px Arial';
+  ctx.fillText(Счёт: ${score}, 10, 25);
+  ctx.fillText(Рекорд: ${highScore}, 10, 50);
 
   requestAnimationFrame(gameLoop);
 }
@@ -294,6 +314,7 @@ jumpButton.addEventListener('mousedown', (e) => {
 });
 
 startButton.addEventListener('click', () => {
+  lastTime = 0;
   startGame();
 });
 
