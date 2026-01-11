@@ -1,1 +1,61 @@
-hi
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Игра Да/Нет</title>
+  <style>
+    body {
+      background: linear-gradient(180deg, #1e3c72, #2a5298);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+    button {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: none;
+      background-color: #4CAF50;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:disabled {
+      background-color: #E53935;
+      cursor: default;
+    }
+    #result {
+      margin-top: 50px;
+      font-size: 48px;
+      height: 60px;
+    }
+  </style>
+</head>
+<body>
+  <button id="btn">Нажми меня</button>
+  <div id="result"></div>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const result = document.getElementById('result');
+
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      result.textContent = '';
+
+      setTimeout(() => {
+        const answers = ['Да', 'Нет'];
+        const answer = answers[Math.floor(Math.random() * answers.length)];
+        result.textContent = answer;
+        btn.disabled = false;
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
