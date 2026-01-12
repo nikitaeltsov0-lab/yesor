@@ -212,14 +212,14 @@ function getRiggedSymbol() {
         if (s1 === s2 && s2 === s3) {
             const winAmount = betCost * payouts[s1];
             balance += winAmount;
-            msgDiv.textContent = ВЫИГРЫШ! +${winAmount} $;
+            msgDiv.textContent = `ВЫИГРЫШ! +${winAmount} $`;
             msgDiv.style.color = "#2ecc71";
 
             if (s1 === '7️⃣') {
                 alert("НЕВЕРОЯТНО! ДЖЕКПОТ! (Но денег мы вам не дадим)");
             }
         } else {
-            if ((s1 === s2)  (s2 === s3)  (s1 === s3)) {
+            if ((s1 === s2) || (s2 === s3) || (s1 === s3)) {
                 msgDiv.textContent = "Эх, почти повезло!";
             } else {
                 msgDiv.textContent = "Попробуй еще раз...";
