@@ -1,15 +1,240 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Тест кнопки</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mini Casino</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .casino-container {
+            background-color: #34495e;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+            border: 2px solid #f1c40f;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #f1c40f;
+        }
+
+        .balance-board {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            background: #222;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #555;
+        }
+
+        .slots {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: #000;
+            padding: 20px;
+            border-radius: 10px;
+            border: 4px solid #e74c3c;
+        }
+
+        .reel {
+            width: 80px;
+            height: 100px;
+            background-color: white;
+            color: black;
+            font-size: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            transition: transform 0.1s;
+        }
+
+        .spin-btn {
+            background: linear-gradient(to bottom, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #96281b;
+            transition: all 0.1s;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .spin-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #96281b;
+        }
+
+        .spin-btn:disabled {
+            background: #7f8c8d;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .message {
+            height: 30px;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #e67e22;
+        }
+
+        /* Анимация тряски для эффекта вращения */
+        .blur {
+            animation: blur-animation 0.1s infinite;
+            filter: blur(2px);
+            color: transparent;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        @keyframes blur-animation {
+            0% { transform: translateY(-2px); }
+            50% { transform: translateY(2px); }
+            100% { transform: translateY(-2px); }
+        }
+    </style>
 </head>
 <body>
-  <button onclick="spin()">Крутить</button>
-  <script>
-    function spin() {
-      alert('Кнопка работает!');
+
+<div class="casino-container">
+    <h1>🎰 ЛОХОТРОН 3000 🎰</h1>
+    
+    <div class="balance-board">
+        Баланс: <span id="balance">1000</span> $
+        <div style="font-size: 0.8rem; color: #aaa;">Ставка: 50 $</div>
+    </div>
+
+    <div class="slots">
+        <div class="reel" id="reel1">🍒</div>
+        <div class="reel" id="reel2">🍒</div>
+        <div class="reel" id="reel3">🍒</div>
+    </div>
+
+    <button class="spin-btn" id="spinBtn" onclick="spin()">КРУТИТЬ!</button>
+    <div class="message" id="message">Удачи!</div>
+</div>
+
+<script>
+    let balance = 1000;
+    const betCost = 50;
+    
+    const symbols = ['🍒', '🍋', '🍇', '💎', '7️⃣'];
+    
+    const payouts = {
+        '🍒': 2,
+        '🍋': 5,
+        '🍇': 10,
+        '💎': 50,
+        '7️⃣': 100
+    };
+function getRiggedSymbol() {
+        let totalWeight = weights.reduce((a, b) => a + b, 0);
+        let random = Math.floor(Math.random() * totalWeight);
+        
+        for (let i = 0; i < symbols.length; i++) {
+            random -= weights[i];
+            if (random < 0) {
+                return symbols[i];
+            }
+        }
+        return symbols[0];
     }
-  </script>
+
+    const reel1 = document.getElementById('reel1');
+    const reel2 = document.getElementById('reel2');
+    const reel3 = document.getElementById('reel3');
+    const balanceSpan = document.getElementById('balance');
+    const msgDiv = document.getElementById('message');
+    const btn = document.getElementById('spinBtn');
+
+    function spin() {
+        if (balance < betCost) {
+            msgDiv.textContent = "Недостаточно средств! Пополните счет (шутка)";
+            msgDiv.style.color = "red";
+            return;
+        }
+
+        balance -= betCost;
+        updateBalance();
+        msgDiv.textContent = "Крутим...";
+        msgDiv.style.color = "#e67e22";
+        
+        btn.disabled = true;
+        reel1.classList.add('blur');
+        reel2.classList.add('blur');
+        reel3.classList.add('blur');
+
+        let r1 = getRiggedSymbol();
+        let r2 = getRiggedSymbol();
+        let r3 = getRiggedSymbol();
+
+        if (r1 === r2 && Math.random() > 0.3) {
+             while(r3 === r1) {
+                 r3 = getRiggedSymbol();
+             }
+        }
+
+        setTimeout(() => stopReel(reel1, r1), 500);
+        setTimeout(() => stopReel(reel2, r2), 1000);
+        setTimeout(() => stopReel(reel3, r3), 1500);
+
+        setTimeout(() => checkWin(r1, r2, r3), 1600);
+    }
+
+    function stopReel(reelElement, symbol) {
+        reelElement.classList.remove('blur');
+        reelElement.textContent = symbol;
+    }
+
+    function checkWin(s1, s2, s3) {
+        btn.disabled = false;
+
+        if (s1 === s2 && s2 === s3) {
+            const winAmount = betCost * payouts[s1];
+            balance += winAmount;
+            msgDiv.textContent = ВЫИГРЫШ! +${winAmount} $;
+            msgDiv.style.color = "#2ecc71";
+
+            if (s1 === '7️⃣') {
+                alert("НЕВЕРОЯТНО! ДЖЕКПОТ! (Но денег мы вам не дадим)");
+            }
+        } else {
+            if ((s1 === s2)  (s2 === s3)  (s1 === s3)) {
+                msgDiv.textContent = "Эх, почти повезло!";
+            } else {
+                msgDiv.textContent = "Попробуй еще раз...";
+            }
+            msgDiv.style.color = "white";
+        }
+        updateBalance();
+    }
+
+    function updateBalance() {
+        balanceSpan.textContent = balance;
+    }
+</script>
+
 </body>
 </html>
+
+    const weights = [50, 35, 15, 3, 1];
