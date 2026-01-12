@@ -1,58 +1,56 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Мини слот</title>
 <style>
-    body {
-        margin: 0;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: #111;
-        color: white;
-        font-family: Arial, sans-serif;
-    }
-    .slot {
-        text-align: center;
-    }
-    .reels {
-        font-size: 60px;
-        margin: 20px 0;
-    }
-    button {
-        padding: 10px 20px;
-        font-size: 18px;
-        cursor: pointer;
-    }
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
+  }
+  .slot {
+    text-align: center;
+  }
+  .reels {
+    font-size: 60px;
+    margin: 20px 0;
+  }
+  button {
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
-
-<div class="slot">
+  <div class="slot">
     <div class="reels" id="reels">🍒 🍒 🍒</div>
     <button onclick="spin()">Крутить</button>
     <div id="result"></div>
-</div>
+  </div>
 
-<script>
-const symbols = ["🍒", "🍋", "🔔", "⭐", "7️⃣"];
+  <script>
+    const symbols = ["🍒", "🍋", "🔔", "⭐", "7️⃣"];
 
-function spin() {
-    const r1 = symbols[Math.floor(Math.random() * symbols.length)];
-    const r2 = symbols[Math.floor(Math.random() * symbols.length)];
-    const r3 = symbols[Math.floor(Math.random() * symbols.length)];
+    function spin() {
+      const r1 = symbols[Math.floor(Math.random() * symbols.length)];
+      const r2 = symbols[Math.floor(Math.random() * symbols.length)];
+      const r3 = symbols[Math.floor(Math.random() * symbols.length)];
 
-    document.getElementById("reels").textContent = ${r1} ${r2} ${r3};
+      document.getElementById("reels").textContent = ${r1} ${r2} ${r3};
 
-    if (r1 === r2 && r2 === r3) {
+      if (r1 === r2 && r2 === r3) {
         document.getElementById("result").textContent = "🎉 Выигрыш!";
-    } else {
+      } else {
         document.getElementById("result").textContent = "❌ Проигрыш";
+      }
     }
-}
-</script>
-
+  </script>
 </body>
 </html>
