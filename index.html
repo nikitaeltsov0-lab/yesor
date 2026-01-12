@@ -237,4 +237,18 @@ function getRiggedSymbol() {
 </body>
 </html>
 
-    const weights = [50, 35, 15, 3, 1];
+const weights = [50, 35, 15, 3, 1];
+
+function getRiggedSymbol() {
+    let totalWeight = weights.reduce((a, b) => a + b, 0);
+    let random = Math.floor(Math.random() * totalWeight);
+
+    for (let i = 0; i < symbols.length; i++) {
+        random -= weights[i];
+        if (random < 0) {
+            return symbols[i];
+        }
+    }
+    return symbols[0];
+}
+
